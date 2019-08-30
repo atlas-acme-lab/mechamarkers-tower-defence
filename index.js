@@ -1,1 +1,2 @@
-console.log('test');
+import { init } from './src/main';
+window.onload = () => init();
