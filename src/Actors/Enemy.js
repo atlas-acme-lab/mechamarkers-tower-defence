@@ -3,14 +3,16 @@ import Vec2 from '../Utils/Vec2';
 export default class Enemy {
   constructor(startNode) {
     this.position = startNode.position.copy();
-    this.speed = 0.1;
+    this.speed = 0.03;
     this.size = 10;
     this.setHeading(startNode.getNextNode());
+
+    this.isAlive = true;
   }
 
   setHeading(target) {
     this.target = target;
-    this.forward = Vec2.subtract(this.target.position, this.position);
+    this.forward = Vec2.sub(this.position, this.target.position);
     this.forward.normalize();
   }
 
@@ -18,7 +20,12 @@ export default class Enemy {
     this.position.addScalar(this.forward, this.speed * dt);
 
     if (this.target.hasArrived(this.position)) {
-      this.setHeading(this.target.getNextNode());
+      const nextNode = this.target.getNextNode();
+
+      if (nextNode) this.setHeading(nextNode);
+      else {
+        this.isAlive = false;
+      }
     }
   }
 

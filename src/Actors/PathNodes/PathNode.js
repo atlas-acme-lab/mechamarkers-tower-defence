@@ -1,4 +1,4 @@
-import * as Vec2 from '../Utils/Vec2';
+import * as Vec2 from '../../Utils/Vec2';
 
 const NODE_DIST = 1;
 const NODE_DIST_SQ = NODE_DIST * NODE_DIST;
