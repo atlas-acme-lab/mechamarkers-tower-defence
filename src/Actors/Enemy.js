@@ -3,11 +3,15 @@ import Vec2 from '../Utils/Vec2';
 export default class Enemy {
   constructor(startNode) {
     this.position = startNode.position.copy();
-    this.speed = 0.03;
+    this.speed = 0.025;
     this.size = 10;
     this.setHeading(startNode.getNextNode());
 
     this.isAlive = true;
+  }
+
+  applyHit() {
+    this.isAlive = false;
   }
 
   setHeading(target) {
