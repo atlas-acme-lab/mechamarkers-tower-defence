@@ -2,9 +2,9 @@ import Vec2 from '../Utils/Vec2';
 
 export default class Enemy {
   constructor(startPos, target) {
-    this.position = startPos.copy();
+    this.position = startPos.clone();
     this.target = target;
-    this.speed = 0.06;
+    this.speed = 0.04;
     this.size = 5;
 
     this.isAlive = true;
@@ -15,9 +15,17 @@ export default class Enemy {
   }
 
   update(dt) {
+    if (!this.isAlive) return;
+    this.isAlive = this.target.isAlive; // Kill when bullet dies
+
     const heading = Vec2.sub(this.position, this.target.position);
     heading.normalize();
     this.position.addScalar(heading, this.speed * dt);
+
+    if (this.position.dist2(this.target.position) < 5) {
+      this.isAlive = false;
+      this.target.applyHit();
+    }
   }
 
   draw(ctx) {

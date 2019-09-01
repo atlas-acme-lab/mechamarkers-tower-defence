@@ -2,16 +2,18 @@ import Vec2 from '../Utils/Vec2';
 
 export default class Enemy {
   constructor(startNode) {
-    this.position = startNode.position.copy();
+    this.position = startNode.position.clone();
     this.speed = 0.025;
     this.size = 10;
     this.setHeading(startNode.getNextNode());
+    this.hp = 2;
 
     this.isAlive = true;
   }
 
   applyHit() {
-    this.isAlive = false;
+    this.hp--;
+    if (this.hp <= 0) this.isAlive = false;
   }
 
   setHeading(target) {
@@ -21,6 +23,8 @@ export default class Enemy {
   }
 
   update(dt) {
+    if (!this.isAlive) return;
+
     this.position.addScalar(this.forward, this.speed * dt);
 
     if (this.target.hasArrived(this.position)) {

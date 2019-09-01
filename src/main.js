@@ -9,6 +9,8 @@ import RandomBranch from './Actors/PathNodes/RandomBranch';
 import Tower from './Actors/Tower';
 import Projectile from './Actors/Projectile';
 
+let dragTarget;
+
 let canvas, ctx, prevTime;
 
 const node1 = new PathNode(new Vec2(100, 200));
@@ -80,6 +82,20 @@ export function init() {
   ctx.translate(0.5, 0.5); // dumb blurry fix
 
   towers.push(new Tower(new Vec2(200, 240), addProjectile));
+
+  canvas.addEventListener('mousedown', e => {
+    const mouseVec = new Vec2(e.x, e.y);
+    dragTarget = towers.find(t => t.isClick(mouseVec));
+  });
+
+  canvas.addEventListener('mousemove', e => {
+    const mouseVec = new Vec2(e.x, e.y);
+    if (dragTarget) {
+      dragTarget.setPosition(mouseVec);
+    }
+  });
+
+  canvas.addEventListener('mouseup', () => dragTarget = null);
 
   window.requestAnimationFrame(update);
 }
