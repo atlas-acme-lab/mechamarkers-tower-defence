@@ -65,14 +65,15 @@ export default class Enemy {
   }
 
   draw(ctx) {
-    ctx.save();
-    ctx.fillStyle = this.color;
-    ctx.translate(this.position.x, this.position.y);
-    ctx.beginPath();
+    // ctx.save();
+    // ctx.fillStyle = this.color;
+    // ctx.translate(this.position.x, this.position.y);
+    // ctx.beginPath();
     switch (this.shape) {
       case 'TRI':
-        ctx.moveTo(this.triPoints[2].x, this.triPoints[2].y);
-        this.triPoints.forEach(tp => ctx.lineTo(tp.x, tp.y));
+        // ctx.moveTo(this.triPoints[2].x, this.triPoints[2].y);
+        // this.triPoints.forEach(tp => ctx.lineTo(tp.x, tp.y));
+        drawEnemy(ctx, this.position, this.forward, 30, 3, {r:0, g:255, b:150, a:0.8});
         break;
       case 'QUAD':
         ctx.moveTo(this.quadPoints[3].x, this.quadPoints[3].y);
@@ -86,8 +87,45 @@ export default class Enemy {
         ctx.arc(0, 0, this.size, 0, 2 * Math.PI);
         break;
     }
-    ctx.fill();
-    ctx.closePath();
-    ctx.restore();
+    // ctx.fill();
+    // ctx.closePath();
+    // ctx.restore();
   }
+}
+
+// NOTE TO PETER
+// color is an object: {r:R, g:G, b:B, a:A}
+// r/g/b: 0-255, a: 0-1
+function drawEnemy(ctx, pos, forward, size, points, color) {
+  const randFactor = 3;
+  let pointsArr = [];
+  for (let i=0; i<points; i++) {
+    const p = Vec2.scale(forward.rotate(2 * Math.PI / points * i), size/2);
+    pointsArr.push(p);
+  }
+
+  ctx.save();
+  ctx.translate(pos.x, pos.y);
+  ctx.lineJoin = "round";
+
+  ctx.lineWidth = 5;
+  ctx.strokeStyle = 'rgba('+color.r+', '+color.g+', '+color.b+', '+color.a*0.6+')';
+  ctx.beginPath();
+  ctx.moveTo(pointsArr[points - 1].x + randRange(randFactor), pointsArr[points - 1].y + randRange(randFactor));
+  pointsArr.forEach(p => ctx.lineTo(p.x + randRange(randFactor), p.y + randRange(randFactor)));
+  ctx.closePath();
+  ctx.stroke();
+
+  ctx.fillStyle = 'rgba('+color.r+', '+color.g+', '+color.b+', '+color.a+')';
+  ctx.beginPath();
+  ctx.moveTo(pointsArr[points - 1].x, pointsArr[points - 1].y);
+  pointsArr.forEach(p => ctx.lineTo(p.x, p.y));
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function randRange(r) {
+  const val = Math.random()*r;
+  return val - r/2;
 }

@@ -95,4 +95,12 @@ export default class Vec2 {
 
     return this;
   }
+
+  rotate(angle) {
+    const x = this.x * Math.cos(angle) - this.y * Math.sin(angle);
+    const y = this.x * Math.sin(angle) + this.y * Math.cos(angle);
+    return {x:x, y:y};
+  }
+
+
 }
