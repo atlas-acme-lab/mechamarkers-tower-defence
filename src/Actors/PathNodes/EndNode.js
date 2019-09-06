@@ -6,6 +6,7 @@ const NODE_DIST_SQ = NODE_DIST * NODE_DIST;
 class EndNode {
   constructor(position) {
     this.position = position;
+    this.nodeType = 'END_NODE';
   }
 
   hasArrived(pos) {

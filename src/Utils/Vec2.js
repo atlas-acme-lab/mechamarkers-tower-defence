@@ -25,6 +25,10 @@ export default class Vec2 {
     return new Vec2(v.x / m, v.y / m);
   }
 
+  static copy(v) {
+    return new Vec2(v.x, v.y);
+  }
+
   // Instance methods
   constructor(x, y) {
     this.x = x;

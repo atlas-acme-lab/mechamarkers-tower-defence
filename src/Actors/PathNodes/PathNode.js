@@ -6,6 +6,7 @@ const NODE_DIST_SQ = NODE_DIST * NODE_DIST;
 class PathNode {
   constructor(position) {
     this.position = position;
+    this.nodeType = 'PATH_NODE';
   }
 
   setNext(nextNode) {
