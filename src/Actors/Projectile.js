@@ -4,7 +4,9 @@ export default class Enemy {
   constructor(startPos, target, shape, color) {
     this.position = startPos.clone();
     this.target = target;
-    this.speed = 0.032;
+    this.speed = 0.01;
+    this.timeAlive = 0;
+    this.speedMax = 0.15;
     this.size = 8;
     this.spin = 0;
     this.isAlive = true;
@@ -42,6 +44,9 @@ export default class Enemy {
 
   update(dt) {
     if (!this.isAlive) return;
+    this.timeAlive += dt;
+    this.speed = Math.pow(this.timeAlive / 1700, 2) * this.speedMax;
+    this.speed = this.speed > this.speedMax ? this.speedMax : this.speed;
     this.isAlive = this.target.isAlive; // Kill when bullet dies
 
     const heading = Vec2.sub(this.position, this.target.position);
@@ -50,7 +55,7 @@ export default class Enemy {
     this.spin += dt * 0.005;
 
     this.trail.push(this.position.clone());
-    if (this.trail.length > 48) this.trail.splice(0, 1);
+    if (this.trail.length > 38) this.trail.splice(0, 1);
 
     if (this.position.dist2(this.target.position) < 5) {
       this.isAlive = false;

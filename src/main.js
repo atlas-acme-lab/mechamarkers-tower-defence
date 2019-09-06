@@ -13,24 +13,48 @@ import Projectile from './Actors/Projectile';
 import * as Mechamarkers from './Mechamarkers';
 
 let dragTarget;
-let grabberWasPressed;
-let secondGrabPress;
+let towerWasGrabbed = false;
+let grabberWasPressed = false;
 
 let canvas, ctx, prevTime;
 
-const node1 = new PathNode(new Vec2(100, 200));
-const node2 = new PathNode(new Vec2(200, 200));
-const branch1 = new SwitchBranch(new Vec2(300, 200));
-const end1 = new EndNode(new Vec2(400, 100));
-const end2 = new EndNode(new Vec2(400, 300));
 
-node1.setNext(node2);
-node2.setNext(branch1);
-branch1.setNext(end1, end2);
+const w = window.innerWidth;
+const h = window.innerHeight;
+
+// col 1
+const startNode = new PathNode(new Vec2(w * 0.1, h / 2));
+// col 2
+const node1 = new SwitchBranch(new Vec2(w * 0.26, h / 2));
+// col 3
+const node2 = new PathNode(new Vec2(w * 0.42, h / 3));
+const node3 = new PathNode(new Vec2(w * 0.42, h * 2 / 3));
+// col 4
+const node4 = new SwitchBranch(new Vec2(w * 0.58, h / 3));
+const node5 = new SwitchBranch(new Vec2(w * 0.58, h * 2 / 3));
+// col 5
+const node6 = new PathNode(new Vec2(w * 0.74, h * 0.15));
+const node7 = new PathNode(new Vec2(w * 0.74, h / 2));
+const node8 = new PathNode(new Vec2(w * 0.74, h * 0.85));
+// col 6
+const node9 = new EndNode(new Vec2(w * 0.9, h * 0.15));
+const node10 = new EndNode(new Vec2(w * 0.9, h / 2));
+const node11 = new EndNode(new Vec2(w * 0.9, h * 0.85));
+
+startNode.setNext(node1);
+node1.setNext(node2, node3);
+node2.setNext(node4);
+node3.setNext(node5);
+node4.setNext(node6, node7);
+node5.setNext(node7, node8);
+node6.setNext(node9);
+node7.setNext(node10);
+node8.setNext(node11);
 
 const enemies = [];
 const towers = [];
 const projectiles = [];
+const gates = [node1, node4, node5];
 
 const SPAWN_TIME_MAX = 2000;
 let spawnTimer = SPAWN_TIME_MAX;
@@ -91,7 +115,7 @@ function update() {
 
   if (spawnTimer <= 0) {
     spawnTimer = SPAWN_TIME_MAX;
-    enemies.push(new Enemy(node1));
+    enemies.push(new Enemy(startNode));
   }
   else spawnTimer -= dt;
 
@@ -107,37 +131,42 @@ function update() {
 
   // Switch logic
   if (gateSwitch && gateSwitch.isPresent()) {
-    // const gatePoint = Mechamarkers.mapPointToCanvas(grabber.pos, window.innerWidth, window.innerHeight);
-
-
+    const gatePoint = Vec2.copy(mapToScreen(Mechamarkers.mapPointToCanvas(grabber.pos)));
+    const targetGate = gates.find(g => g.position.dist(gatePoint) < 30);
+    if (targetGate) targetGate.flipped = (gateSwitch.getInput('switch').val > 0.5);
   }
 
   // Grabber logic, this if is bc some code run before stuff is loaded, should have a stuff is loaded callback
   if (towerGrabber) {
     const currGrabberPress = towerGrabber.isPresent();
     if (currGrabberPress) {
-      const grabPoint = Vec2.copy(Mechamarkers.mapPointToCanvas(towerGrabber.pos, window.innerWidth, window.innerHeight));
+      const grabPoint = Vec2.copy(mapToScreen(Mechamarkers.mapPointToCanvas(towerGrabber.pos)));
       // Essentially mouse down event
       if (!grabberWasPressed && currGrabberPress) {
-        // find tower if no tower grabbed, otherwise 
-        if (!dragTarget) dragTarget = towers.find(t => t.isClick(grabPoint));
-        else {
-          dragTarget.position.x = grabPoint.x;
-          dragTarget.position.y = grabPoint.y;
-          dragTarget = null;
-        }
+
+        if (!towerWasGrabbed) dragTarget = towers.find(t => t.isClick(grabPoint, 50));
+        if (dragTarget) dragTarget.isHeld = true;
       }
 
-      if (dragTarget && grabberWasPressed && currGrabberPress) {
+      if (dragTarget) {
         dragTarget.position.x = grabPoint.x;
         dragTarget.position.y = grabPoint.y;
       }
     }
 
     // Grabber up
-    // if (grabberWasPressed && !currGrabberPress) {
-
-    // }
+    if (grabberWasPressed && !currGrabberPress) {
+      if (towerWasGrabbed) {
+        const grabPoint = Vec2.copy(mapToScreen(Mechamarkers.mapPointToCanvas(towerGrabber.pos)));
+        dragTarget.position.x = grabPoint.x;
+        dragTarget.position.y = grabPoint.y;
+        dragTarget.isHeld = false;
+        dragTarget = null;
+        towerWasGrabbed = false;
+      } else if (dragTarget) {
+        towerWasGrabbed = true;
+      }
+    }
     
     grabberWasPressed = currGrabberPress;
   }
@@ -150,11 +179,19 @@ function update() {
   // Temp draw grabber
   if (towerGrabber && towerGrabber.isPresent()) drawGrabber(towerGrabber);
 
+  startNode.draw(ctx);
   node1.draw(ctx);
   node2.draw(ctx);
-  branch1.draw(ctx);
-  end1.draw(ctx);
-  end2.draw(ctx);
+  node3.draw(ctx);
+  node4.draw(ctx);
+  node5.draw(ctx);
+  node6.draw(ctx);
+  node7.draw(ctx);
+  node8.draw(ctx);
+  node9.draw(ctx);
+  node10.draw(ctx);
+  node11.draw(ctx);
+  
 
   enemies.forEach(e => e.draw(ctx));
   towers.forEach(t => t.draw(ctx));
@@ -179,21 +216,21 @@ export function init() {
   // Put towers in
   towers.push(new Tower(new Vec2(200, 240), addProjectile));
 
-  canvas.addEventListener('mousedown', e => {
-    const mouseVec = new Vec2(e.x, e.y);
-    dragTarget = towers.find(t => t.isClick(mouseVec));
+  // canvas.addEventListener('mousedown', e => {
+  //   const mouseVec = new Vec2(e.x, e.y);
+  //   dragTarget = towers.find(t => t.isClick(mouseVec));
 
-    if (!dragTarget) branch1.flip();
-  });
+  //   // if (!dragTarget) startNode.flip();
+  // });
 
-  canvas.addEventListener('mousemove', e => {
-    const mouseVec = new Vec2(e.x, e.y);
-    if (dragTarget) {
-      dragTarget.setPosition(mouseVec);
-    }
-  });
+  // canvas.addEventListener('mousemove', e => {
+  //   const mouseVec = new Vec2(e.x, e.y);
+  //   if (dragTarget) {
+  //     dragTarget.setPosition(mouseVec);
+  //   }
+  // });
 
-  canvas.addEventListener('mouseup', () => dragTarget = null);
+  // canvas.addEventListener('mouseup', () => dragTarget = null);
 
   resize();
   window.onresize = resize;

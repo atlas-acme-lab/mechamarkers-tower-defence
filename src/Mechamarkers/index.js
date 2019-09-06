@@ -46,9 +46,17 @@ function parseInputs(data) {
 
 export function mapPointToCanvas(point, canvasW, canvasH) {
   const mappedVec = mapUVtoCellCoord(mapPointToUV(point));
+
+  if (mappedVec) {
+    return {
+      x: mappedVec.x,// / canvasW,
+      y: mappedVec.y,// / canvasH,
+    };
+  }
+
   return {
-    x: mappedVec.x,// / canvasW,
-    y: mappedVec.y,// / canvasH,
+    x: -1000,
+    y: -1000,
   };
 }
 

@@ -18,8 +18,8 @@ export default class Tower {
     return this.position.dist2(target) < this.rangeSq;
   }
 
-  isClick(mouseVec) {
-    return mouseVec.dist(this.position) < this.center;
+  isClick(mouseVec, d) {
+    return mouseVec.dist(this.position) < this.center + d;
   }
 
   setPosition(newPos) {
@@ -40,17 +40,10 @@ export default class Tower {
   }
 
   draw(ctx) {
-    // ctx.save();
-    // ctx.strokeStyle = 'white';
-    // ctx.translate(this.position.x, this.position.y);
-    // ctx.beginPath();
-    // ctx.arc(0, 0, this.center, 0, 2 * Math.PI);
-    // ctx.arc(0, 0, this.range, 0, 2 * Math.PI);
-    // ctx.stroke();
-    // ctx.closePath();
-    // ctx.restore();
-
-    drawTower(ctx, this.position, this.range, 20, 3, {r:0, g:255, b:150, a:1.0})
+    if (this.isHeld)
+      drawTower(ctx, this.position, this.range / 2, 20, 3, {r:0, g:255, b:150, a:0.3})
+    else 
+      drawTower(ctx, this.position, this.range, 20, 3, {r:0, g:255, b:150, a:1.0})
   }
 }
 
