@@ -6,7 +6,7 @@ export default class Enemy {
     this.target = target;
     this.speed = 0.01;
     this.timeAlive = 0;
-    this.speedMax = 0.15;
+    this.speedMax = 0.10;
     this.size = 8;
     this.spin = 0;
     this.isAlive = true;
@@ -45,7 +45,7 @@ export default class Enemy {
   update(dt) {
     if (!this.isAlive) return;
     this.timeAlive += dt;
-    this.speed = Math.pow(this.timeAlive / 1700, 2) * this.speedMax;
+    this.speed = this.speedMax;
     this.speed = this.speed > this.speedMax ? this.speedMax : this.speed;
     this.isAlive = this.target.isAlive; // Kill when bullet dies
 
@@ -83,7 +83,7 @@ export default class Enemy {
       case 'TRI':
         // ctx.moveTo(this.triPoints[2].x, this.triPoints[2].y);
         // this.triPoints.forEach(tp => ctx.lineTo(tp.x, tp.y));
-        drawProjectile(ctx, this.trail, this.spin, 20, 3, {r:0, g:255, b:150, a:1.0});
+        drawProjectile(ctx, this.trail, this.spin, 20, 7, {r:255, g:255, b:100, a:1.0});
         break;
       case 'QUAD':
         // ctx.moveTo(this.quadPoints[3].x, this.quadPoints[3].y);

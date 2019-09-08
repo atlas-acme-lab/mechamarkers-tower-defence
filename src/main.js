@@ -23,19 +23,19 @@ const w = window.innerWidth;
 const h = window.innerHeight;
 
 // col 1
-const startNode = new PathNode(new Vec2(w * 0.1, h / 2));
+const startNode = new PathNode(new Vec2(w * 0.1, h / 2), true);
 // col 2
 const node1 = new SwitchBranch(new Vec2(w * 0.26, h / 2));
 // col 3
-const node2 = new PathNode(new Vec2(w * 0.42, h / 3));
-const node3 = new PathNode(new Vec2(w * 0.42, h * 2 / 3));
+const node2 = new PathNode(new Vec2(w * 0.42, h / 3), false);
+const node3 = new PathNode(new Vec2(w * 0.42, h * 2 / 3), false);
 // col 4
 const node4 = new SwitchBranch(new Vec2(w * 0.58, h / 3));
 const node5 = new SwitchBranch(new Vec2(w * 0.58, h * 2 / 3));
 // col 5
-const node6 = new PathNode(new Vec2(w * 0.74, h * 0.15));
-const node7 = new PathNode(new Vec2(w * 0.74, h / 2));
-const node8 = new PathNode(new Vec2(w * 0.74, h * 0.85));
+const node6 = new PathNode(new Vec2(w * 0.74, h * 0.15), false);
+const node7 = new PathNode(new Vec2(w * 0.74, h / 2), false);
+const node8 = new PathNode(new Vec2(w * 0.74, h * 0.85), false);
 // col 6
 const node9 = new EndNode(new Vec2(w * 0.9, h * 0.15));
 const node10 = new EndNode(new Vec2(w * 0.9, h / 2));
@@ -62,7 +62,7 @@ let spawnTimer = SPAWN_TIME_MAX;
 const SCREEN = {
   rx: (4+14/16)*25.4, // mm (real world dimensions)
   ry: (3+14/16)*25.4, // mm (real world dimensions)
-  rw: (35+12/16)*25.4, // mm (real world dimensions)
+  rw: (35+15/16)*25.4, // mm (real world dimensions)
   rh: (22+0/16)*25.4, // mm (real world dimensions)
   w: window.innerWidth, // px (screen resolution)
   h: window.innerHeight, // px (screen resolution)
@@ -214,7 +214,7 @@ export function init() {
   Mechamarkers.init(canvas, ctx);
 
   // Put towers in
-  towers.push(new Tower(new Vec2(200, 240), addProjectile));
+  towers.push(new Tower(new Vec2(400, 600), addProjectile));
 
   // canvas.addEventListener('mousedown', e => {
   //   const mouseVec = new Vec2(e.x, e.y);

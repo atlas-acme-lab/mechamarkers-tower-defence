@@ -7,6 +7,8 @@ export default class Tower {
     this.center = 10;
     this.rangeSq = this.range * this.range;
     this.shootTimer = 0;
+    this.shootRotate = 0;
+    this.timeStamp = 0;
     this.SHOOT_MAX = 3000;
     this.addProjectile = addProjectile;
 
@@ -27,6 +29,24 @@ export default class Tower {
   }
 
   update(dt, enemies) {
+    const delta = Date.now() - this.timeStamp;
+    this.timeStamp = Date.now();
+    this.shootRotate = this.shootRotate + delta/1000;
+    
+    let enemyCount = 0;
+    enemies.forEach(e => {
+      if (this.inRange(e.position)) {
+        enemyCount++;
+      }
+    });
+
+    if (enemyCount > 0) {
+      if (this.shootTimer < 1000) this.shootRotate = this.shootRotate + Math.pow((1000 - this.shootTimer)/1000, 2) * 0.3;
+      if (this.shootTimer > this.SHOOT_MAX - 700) this.shootRotate = this.shootRotate + Math.pow((700 - this.SHOOT_MAX + this.shootTimer)/700, 2) * 0.3;
+    }
+
+    this.shootRotate = this.shootRotate % (2*Math.PI);
+
     if (this.shootTimer > 0) this.shootTimer -= dt;
     else {
       this.shootTimer = this.SHOOT_MAX;
@@ -41,13 +61,13 @@ export default class Tower {
 
   draw(ctx) {
     if (this.isHeld)
-      drawTower(ctx, this.position, this.range / 2, 20, 3, {r:0, g:255, b:150, a:0.3})
+      drawTower(ctx, this.position, this.range / 2, 20, 7, {r:255, g:255, b:100, a:0.3}, this.shootRotate);
     else 
-      drawTower(ctx, this.position, this.range, 20, 3, {r:0, g:255, b:150, a:1.0})
+      drawTower(ctx, this.position, this.range, 20, 7, {r:255, g:255, b:100, a:1.0}, this.shootRotate);
   }
 }
 
-function drawTower(ctx, pos, range, size, points, color) {
+function drawTower(ctx, pos, range, size, points, color, rotateVal) {
   
   const xaxis = new Vec2(1, 0);
   let pointsArr = [];
@@ -66,13 +86,6 @@ function drawTower(ctx, pos, range, size, points, color) {
 
   ctx.save();
   ctx.translate(pos.x, pos.y);
-  ctx.rotate((Date.now()/1000) % (Math.PI*2));
-
-  ctx.strokeStyle = 'rgba('+color.r+', '+color.g+', '+color.b+', '+color.a+')';
-  ctx.beginPath();
-  ctx.moveTo(pointsArr[points - 1].x, pointsArr[points - 1].y);
-  pointsArr.forEach(p => ctx.lineTo(p.x, p.y));
-  ctx.stroke();
 
   ctx.strokeStyle = 'rgba('+color.r+', '+color.g+', '+color.b+', '+color.a+')';
   ctx.beginPath();
@@ -80,6 +93,19 @@ function drawTower(ctx, pos, range, size, points, color) {
   randBoundaryA.forEach(p => ctx.lineTo(p.x, p.y));
   ctx.closePath();
   ctx.stroke();
+
+  ctx.rotate(rotateVal);
+
+  ctx.fillStyle = 'rgba('+color.r+', '+color.g+', '+color.b+', '+color.a+')';
+  ctx.beginPath();
+  ctx.moveTo(pointsArr[points - 1].x, pointsArr[points - 1].y);
+  pointsArr.forEach(p => ctx.lineTo(p.x, p.y));
+  ctx.fill();
+  pointsArr.forEach(p => {
+    ctx.beginPath();
+    ctx.ellipse(p.x, p.y, size/15, size/15, 0, 0, 2*Math.PI, false);
+    ctx.fill();
+  });
 
   ctx.restore();
 }

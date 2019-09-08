@@ -4,9 +4,10 @@ const NODE_DIST = 5;
 const NODE_DIST_SQ = NODE_DIST * NODE_DIST;
 
 class PathNode {
-  constructor(position) {
+  constructor(position, isStart) {
     this.position = position;
     this.nodeType = 'PATH_NODE';
+    this.isStart = isStart;
   }
 
   setNext(nextNode) {
@@ -26,11 +27,14 @@ class PathNode {
 
   draw(ctx) {
     ctx.save();
+    
     ctx.strokeStyle = 'white';
+    ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(this.position.x, this.position.y);
     ctx.lineTo(this.nextNode.position.x, this.nextNode.position.y);
     ctx.stroke();
+
     ctx.restore();
   }
 }

@@ -73,7 +73,7 @@ export default class Enemy {
       case 'TRI':
         // ctx.moveTo(this.triPoints[2].x, this.triPoints[2].y);
         // this.triPoints.forEach(tp => ctx.lineTo(tp.x, tp.y));
-        drawEnemy(ctx, this.position, this.forward, 30, 3, {r:0, g:255, b:150, a:0.8});
+        drawEnemy(ctx, this.position, this.forward, 27, 7, {r:255, g:255, b:100, a:0.8});
         break;
       case 'QUAD':
         ctx.moveTo(this.quadPoints[3].x, this.quadPoints[3].y);
