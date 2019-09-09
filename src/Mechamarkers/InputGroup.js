@@ -59,6 +59,9 @@ class InputGroup {
       { x: config.markerSize/2, y: config.markerSize/2 },
       { x: -config.markerSize/2, y: config.markerSize/2 }
     ];
+
+    this.cornerAngleGroup = 1*Math.PI/4;
+    this.cornerAngleInput = -1*Math.PI/4;
   }
 
   getInput(inputName) {
@@ -79,11 +82,9 @@ class InputGroup {
     let centerPts = this.inputs.map(i => {
       if (!i || !i.actor) return { x: 0, y: 0 };
       // Give each input class a get center point
-      return (vecRot(vecScale(xaxis, i.relativePosition.distance*pxpermm), -i.relativePosition.angle))
+      return (vecRot(vecScale(xaxis, i.relativePosition.distance*pxpermm), i.relativePosition.angle - this.cornerAngleInput));
     });
     centerPts.push({x:0, y:0});
-
-    // centerPts = centerPts.map(p => vecRot(p, -this.angle));
 
     centerPts.sort((a, b) => (a.x - b.x));
     const xmax = centerPts[centerPts.length-1].x;
@@ -103,8 +104,8 @@ class InputGroup {
 
   update() {
     if (!this.anchor) return;
-    this.angle = vecAngleBetween(vecSub(this.anchor.center, this.anchor.corner), angleRefAxis) - CORNER_ANGLE;
-    this.pos = vecEMA(this.anchor.center, this.pos, 0);
+    this.angle = -vecAngleBetween(vecSub(this.anchor.center, this.anchor.corner), angleRefAxis) - this.cornerAngleGroup;
+    this.pos = vecEMA(this.anchor.center, this.pos, 0.5);
     if (this.anchor.present) {
       this.matrixRect2Quad = calDistortionMatrices(
         this.anchor.allCorners[0], this.anchor.allCorners[1], this.anchor.allCorners[2], this.anchor.allCorners[3],
@@ -122,7 +123,6 @@ class InputGroup {
   display(ctx) {
     if (!this.anchor) return;
     if (this.anchor.present) {
-
       const edgelen = this.anchor.allCorners.map((v, i, arr) => vecMag(vecSub(v, arr[(i + 1) % arr.length])));
       const peri = edgelen.reduce((acc, v) => (acc + v));
       const pxpermm = peri / (this.markerSize*4);

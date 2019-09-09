@@ -1,3 +1,4 @@
+import { COLORS } from '../Constants';
 import Vec2 from '../Utils/Vec2';
 
 export default class Tower {
@@ -12,8 +13,8 @@ export default class Tower {
     this.SHOOT_MAX = 3000;
     this.addProjectile = addProjectile;
 
-    this.shape = 'TRI';
-    this.color = '#0000ff';
+    this.sides = 5;
+    this.color = COLORS.GOLD;
   }
 
   inRange(target) {
@@ -52,23 +53,21 @@ export default class Tower {
       this.shootTimer = this.SHOOT_MAX;
       enemies.forEach(e => {
         if (this.inRange(e.position)) {
-          this.addProjectile(this.position, e, this.shape, this.color);
+          this.addProjectile(this.position, e, this.sides, this.color);
         }
       });
     }
-
   }
 
   draw(ctx) {
     if (this.isHeld)
-      drawTower(ctx, this.position, this.range / 2, 20, 7, {r:255, g:255, b:100, a:0.3}, this.shootRotate);
+      drawTower(ctx, this.position, this.range / 2, 20, this.sides, this.color, 0.3, this.shootRotate)
     else 
-      drawTower(ctx, this.position, this.range, 20, 7, {r:255, g:255, b:100, a:1.0}, this.shootRotate);
+      drawTower(ctx, this.position, this.range, 20, this.sides, this.color, 1.0, this.shootRotate)
   }
 }
 
-function drawTower(ctx, pos, range, size, points, color, rotateVal) {
-  
+function drawTower(ctx, pos, range, size, points, color, alpha, rotateVal) {
   const xaxis = new Vec2(1, 0);
   let pointsArr = [];
   for (let i=0; i<points; i++) {
@@ -87,7 +86,7 @@ function drawTower(ctx, pos, range, size, points, color, rotateVal) {
   ctx.save();
   ctx.translate(pos.x, pos.y);
 
-  ctx.strokeStyle = 'rgba('+color.r+', '+color.g+', '+color.b+', '+color.a+')';
+  ctx.strokeStyle = 'rgba('+color.r+', '+color.g+', '+color.b+', '+alpha+')';
   ctx.beginPath();
   ctx.moveTo(randBoundaryA[0].x, randBoundaryA[0].y);
   randBoundaryA.forEach(p => ctx.lineTo(p.x, p.y));
@@ -96,7 +95,7 @@ function drawTower(ctx, pos, range, size, points, color, rotateVal) {
 
   ctx.rotate(rotateVal);
 
-  ctx.fillStyle = 'rgba('+color.r+', '+color.g+', '+color.b+', '+color.a+')';
+  ctx.fillStyle = 'rgba('+color.r+', '+color.g+', '+color.b+', '+alpha+')';
   ctx.beginPath();
   ctx.moveTo(pointsArr[points - 1].x, pointsArr[points - 1].y);
   pointsArr.forEach(p => ctx.lineTo(p.x, p.y));

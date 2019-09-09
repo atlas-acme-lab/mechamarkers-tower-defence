@@ -1,5 +1,6 @@
 import Vec2 from './Utils/Vec2';
 import Enemy from './Actors/Enemy';
+import { COLORS } from './Constants';
 
 // Nodes
 import PathNode from './Actors/PathNodes/PathNode';
@@ -17,7 +18,6 @@ let towerWasGrabbed = false;
 let grabberWasPressed = false;
 
 let canvas, ctx, prevTime;
-
 
 const w = window.innerWidth;
 const h = window.innerHeight;
@@ -56,34 +56,12 @@ const towers = [];
 const projectiles = [];
 const gates = [node1, node4, node5];
 
-const SPAWN_TIME_MAX = 2000;
+const SPAWN_TIME_MAX = 1700;
 let spawnTimer = SPAWN_TIME_MAX;
 
-const SCREEN = {
-  rx: (4+14/16)*25.4, // mm (real world dimensions)
-  ry: (3+14/16)*25.4, // mm (real world dimensions)
-  rw: (35+15/16)*25.4, // mm (real world dimensions)
-  rh: (22+0/16)*25.4, // mm (real world dimensions)
-  w: window.innerWidth, // px (screen resolution)
-  h: window.innerHeight, // px (screen resolution)
-};
-
-
-function mapToScreen(pt) {
-  if (pt.x >= SCREEN.rx && pt.x <= SCREEN.rx + SCREEN.rw && pt.y >= SCREEN.ry && pt.y <= SCREEN.ry + SCREEN.rh) {
-      var px = pt.x - SCREEN.rx;
-      var py = pt.y - SCREEN.ry;
-      px = (px / SCREEN.rw) * SCREEN.w;
-      py = (py / SCREEN.rh) * SCREEN.h;
-      return {x:px, y:py};
-  }
-  // Don't return undefined
-  return { x: 0, y: 0};
-}
-
-function unitToScreen(val) {
-  return (val / SCREEN.rw * SCREEN.w);
-}
+let spawnTypeTimer = 8000;
+let spawnSides = 3;
+let spawnColor = COLORS.GOLD;
 
 function addProjectile(start, target, shape, color) {
   projectiles.push(new Projectile(start, target, shape, color));
@@ -98,10 +76,10 @@ function filterActors() {
 }
 
 function drawGrabber(grabber) {
-  const grabPos = mapToScreen(Mechamarkers.mapPointToCanvas(grabber.pos));
+  const grabPoint = Vec2.copy(Mechamarkers.mapPointToCanvas(grabber.pos, window.innerWidth, window.innerHeight));
   ctx.fillStyle = 'white';
   ctx.beginPath();
-  ctx.arc(grabPos.x, grabPos.y, 40, 0, Math.PI * 2);
+  ctx.arc(grabPoint.x, grabPoint.y, 40, 0, Math.PI * 2);
   ctx.fill();
   ctx.closePath();
 }
@@ -115,9 +93,17 @@ function update() {
 
   if (spawnTimer <= 0) {
     spawnTimer = SPAWN_TIME_MAX;
-    enemies.push(new Enemy(startNode));
+    enemies.push(new Enemy(startNode, spawnSides, spawnColor));
   }
   else spawnTimer -= dt;
+
+  if (spawnTypeTimer <= 0) {
+    spawnTypeTimer = 8000;
+    spawnSides = Math.floor(Math.random() * 4 + 3);
+    spawnSides = spawnSides > 6 ? 6 : spawnSides;
+    spawnColor = Object.values(COLORS)[Math.floor(Math.random() * Object.values(COLORS).length)]
+  }
+  spawnTypeTimer -= dt;
 
   enemies.forEach(e => e.update(dt));
   towers.forEach(t => t.update(dt, enemies));
@@ -127,20 +113,40 @@ function update() {
   const gateSwitch = Mechamarkers.getGroup('Gate Switch');
   const towerSetter = Mechamarkers.getGroup('Tower Setter');
   const towerGrabber = Mechamarkers.getGroup('Tower Grabber');
-  // gateSwitch.getInput('switch').val;
 
   // Switch logic
   if (gateSwitch && gateSwitch.isPresent()) {
-    const gatePoint = Vec2.copy(mapToScreen(Mechamarkers.mapPointToCanvas(grabber.pos)));
+    const gatePoint = Vec2.copy(Mechamarkers.mapPointToCanvas(gateSwitch.pos, window.innerWidth, window.innerHeight));
     const targetGate = gates.find(g => g.position.dist(gatePoint) < 30);
     if (targetGate) targetGate.flipped = (gateSwitch.getInput('switch').val > 0.5);
+  }
+
+  if (towerSetter && towerSetter.isPresent()) {
+    const setterPoint = Vec2.copy(Mechamarkers.mapPointToCanvas(towerSetter.pos, window.innerWidth, window.innerHeight));
+    const targetTower = towers.find(t => {
+      return t.position.dist(setterPoint) < 100
+    });
+
+    if (targetTower) {
+      if (towerSetter.getInput('Shape').val < 0.2) {
+        targetTower.sides = 3;
+      } else if (towerSetter.getInput('Shape').val < 0.5) {
+        targetTower.sides = 4;
+      } else if (towerSetter.getInput('Shape').val < 0.8) {
+        targetTower.sides = 5;
+      } else {
+        targetTower.sides = 6;
+      }
+
+      console.log(towerSetter.getInput('Color').val);
+    }
   }
 
   // Grabber logic, this if is bc some code run before stuff is loaded, should have a stuff is loaded callback
   if (towerGrabber) {
     const currGrabberPress = towerGrabber.isPresent();
     if (currGrabberPress) {
-      const grabPoint = Vec2.copy(mapToScreen(Mechamarkers.mapPointToCanvas(towerGrabber.pos)));
+      const grabPoint = Vec2.copy(Mechamarkers.mapPointToCanvas(towerGrabber.pos, window.innerWidth, window.innerHeight));
       // Essentially mouse down event
       if (!grabberWasPressed && currGrabberPress) {
 
@@ -157,7 +163,7 @@ function update() {
     // Grabber up
     if (grabberWasPressed && !currGrabberPress) {
       if (towerWasGrabbed) {
-        const grabPoint = Vec2.copy(mapToScreen(Mechamarkers.mapPointToCanvas(towerGrabber.pos)));
+        const grabPoint = Vec2.copy(Mechamarkers.mapPointToCanvas(towerGrabber.pos, window.innerWidth, window.innerHeight));
         dragTarget.position.x = grabPoint.x;
         dragTarget.position.y = grabPoint.y;
         dragTarget.isHeld = false;
@@ -191,7 +197,6 @@ function update() {
   node9.draw(ctx);
   node10.draw(ctx);
   node11.draw(ctx);
-  
 
   enemies.forEach(e => e.draw(ctx));
   towers.forEach(t => t.draw(ctx));
@@ -214,23 +219,7 @@ export function init() {
   Mechamarkers.init(canvas, ctx);
 
   // Put towers in
-  towers.push(new Tower(new Vec2(400, 600), addProjectile));
-
-  // canvas.addEventListener('mousedown', e => {
-  //   const mouseVec = new Vec2(e.x, e.y);
-  //   dragTarget = towers.find(t => t.isClick(mouseVec));
-
-  //   // if (!dragTarget) startNode.flip();
-  // });
-
-  // canvas.addEventListener('mousemove', e => {
-  //   const mouseVec = new Vec2(e.x, e.y);
-  //   if (dragTarget) {
-  //     dragTarget.setPosition(mouseVec);
-  //   }
-  // });
-
-  // canvas.addEventListener('mouseup', () => dragTarget = null);
+  towers.push(new Tower(new Vec2(400, 300), addProjectile));
 
   resize();
   window.onresize = resize;

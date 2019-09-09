@@ -3,7 +3,6 @@ import { initMarkers } from './Markers';
 import { pointInRect } from './Utils/CollisionDetection';
 import { avgCorners } from './Utils/General';
 import { mapUVtoCellCoord, mapPointToUV } from './Utils/Quadmap';
-import { checkPerspective, relativePosition } from './RelativePos';
 import InputGroup from './InputGroup';
 
 let socket;
@@ -45,12 +44,12 @@ function parseInputs(data) {
 }
 
 export function mapPointToCanvas(point, canvasW, canvasH) {
-  const mappedVec = mapUVtoCellCoord(mapPointToUV(point));
+  const mappedPoint = mapUVtoCellCoord(mapPointToUV(point));
 
-  if (mappedVec) {
+  if (mappedPoint) {
     return {
-      x: mappedVec.x,// / canvasW,
-      y: mappedVec.y,// / canvasH,
+      x: mappedPoint.x * canvasW,
+      y: mappedPoint.y * canvasH,
     };
   }
 
@@ -88,8 +87,7 @@ export function init(canvas, ctx) {
     if (markers.length > 0) {
       const mappedMarkers = markers.map(m => {
         // include naive conversion here in library
-        const mappedCorners = m.corners
-          .map(c => ({ x: c[0] / 1280 * canvas.width, y: c[1] / 720 * canvas.height }));
+        const mappedCorners = m.corners.map(c => ({ x: c[0], y: c[1] }));
 
         return {
           id: m.id,
