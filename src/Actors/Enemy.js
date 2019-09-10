@@ -40,7 +40,7 @@ export default class Enemy {
   }
 
   draw(ctx) {
-    drawEnemy(ctx, this.position, this.forward, 27, this.sides, this.color, 0.8);
+    drawEnemy(ctx, this.position, this.forward, 27, this.sides, this.color, 0.9);
   }
 }
 
@@ -48,10 +48,10 @@ export default class Enemy {
 // color is an object: {r:R, g:G, b:B, a:A}
 // r/g/b: 0-255, a: 0-1
 function drawEnemy(ctx, pos, forward, size, points, color, alpha) {
-  const randFactor = 3;
+  const randFactor = 1.5;
   let pointsArr = [];
   for (let i=0; i<points; i++) {
-    const p = Vec2.scale(forward.rotate(2 * Math.PI / points * i), size/2);
+    const p = Vec2.scale(Vec2.rotate(forward, 2 * Math.PI / points * i), size/2);
     pointsArr.push(p);
   }
 
@@ -59,15 +59,15 @@ function drawEnemy(ctx, pos, forward, size, points, color, alpha) {
   ctx.translate(pos.x, pos.y);
   ctx.lineJoin = "round";
 
-  ctx.lineWidth = 5;
-  ctx.strokeStyle = 'rgba('+color.r+', '+color.g+', '+color.b+', '+alpha*0.6+')';
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = 'rgba('+color.r+', '+color.g+', '+color.b+', '+alpha+')';
   ctx.beginPath();
   ctx.moveTo(pointsArr[points - 1].x + randRange(randFactor), pointsArr[points - 1].y + randRange(randFactor));
   pointsArr.forEach(p => ctx.lineTo(p.x + randRange(randFactor), p.y + randRange(randFactor)));
   ctx.closePath();
   ctx.stroke();
 
-  ctx.fillStyle = 'rgba('+color.r+', '+color.g+', '+color.b+', '+alpha+')';
+  ctx.fillStyle = 'rgba('+color.r+', '+color.g+', '+color.b+', '+alpha*0.5+')';
   ctx.beginPath();
   ctx.moveTo(pointsArr[points - 1].x, pointsArr[points - 1].y);
   pointsArr.forEach(p => ctx.lineTo(p.x, p.y));

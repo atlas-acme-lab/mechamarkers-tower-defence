@@ -53,7 +53,7 @@ function drawProjectile(ctx, trail, spin, size, points, color, alpha) {
   const xaxis = new Vec2(1, 0);
 
   for (let i=0; i<points; i++) {
-    const p = xaxis.rotate(2 * Math.PI / points * i);
+    const p = Vec2.rotate(xaxis, 2 * Math.PI / points * i);
     pointsArr.push(p);
   }
 

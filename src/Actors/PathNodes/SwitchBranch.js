@@ -59,13 +59,13 @@ class SwitchBranch {
     ctx.save();
 
     // path 1
-    ctx.strokeStyle = this.active && !this.flipped ? 'white' : 'grey';
+    ctx.strokeStyle = this.active && !this.flipped ? 'white' : 'white';
     ctx.beginPath();
     ctx.moveTo(this.position.x, this.position.y);
     ctx.lineTo(this.next1.position.x, this.next1.position.y);
     ctx.stroke();
 
-    ctx.strokeStyle = this.active && this.flipped ? 'white' : 'grey';
+    ctx.strokeStyle = this.active && this.flipped ? 'white' : 'white';
     ctx.beginPath();
     ctx.moveTo(this.position.x, this.position.y);
     ctx.lineTo(this.next2.position.x, this.next2.position.y);

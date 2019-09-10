@@ -34,7 +34,7 @@ class EndNode {
 
   draw(ctx) {
     ctx.save();
-    ctx.strokeStyle = this.active ? 'white' : 'grey';
+    ctx.strokeStyle = this.active ? 'white' : 'white';
     ctx.beginPath();
     ctx.arc(this.position.x, this.position.y, 15, 0, 2 * Math.PI);
     ctx.stroke();

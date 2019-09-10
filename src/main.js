@@ -63,6 +63,9 @@ let spawnTimer = SPAWN_TIME_MAX;
 let spawnTypeTimer = 8000;
 let spawnSides = 3;
 let spawnColor = COLORS.GOLD;
+let canSpawn = true;
+let spawnBuffer = 3000;
+let SPAWN_BUFFER_MAX = 3000;
 
 function addProjectile(start, target, shape, color) {
   projectiles.push(new Projectile(start, target, shape, color));
@@ -85,28 +88,62 @@ function drawGrabber(grabber) {
   ctx.closePath();
 }
 
+function drawSetter(setter) {
+  const pos = Vec2.copy(Mechamarkers.mapPointToCanvas(setter.pos, window.innerWidth, window.innerHeight));
+  ctx.save();
+  ctx.fillStyle = 'white';
+  ctx.translate(pos.x, pos.y);
+  ctx.rotate(-setter.angle);
+  ctx.beginPath();
+  ctx.arc(85, 25, 10, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.closePath();
+  ctx.restore();
+}
+
+function drawSwitch(gateSwitch) {
+  const pos = Vec2.copy(Mechamarkers.mapPointToCanvas(gateSwitch.pos, window.innerWidth, window.innerHeight));
+
+  ctx.fillStyle = 'white';
+  ctx.beginPath();
+  ctx.arc(pos.x, pos.y, 50, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.closePath();
+}
+
 function update() {
   const currTime = Date.now();
-  const dt = currTime - prevTime;
+  const dt = (currTime - prevTime) * 0.5;
   prevTime = currTime;
 
   Mechamarkers.update(currTime);
   // trigger active state on all nodes
   startNode.setActive();
 
-  if (spawnTimer <= 0) {
-    spawnTimer = SPAWN_TIME_MAX;
-    enemies.push(new Enemy(startNode, spawnSides, spawnColor));
+  if (canSpawn) {
+    if (spawnTimer <= 0) {
+      spawnTimer = SPAWN_TIME_MAX;
+      enemies.push(new Enemy(startNode, spawnSides, spawnColor));
+    }
+    else spawnTimer -= dt;
+    
+    if (spawnTypeTimer <= 0) {
+      spawnTypeTimer = 8000;
+      spawnSides = Math.floor(Math.random() * 4 + 3);
+      spawnSides = spawnSides > 6 ? 6 : spawnSides;
+      spawnColor = Object.values(COLORS)[Math.floor(Math.random() * Object.values(COLORS).length)]
+  
+      // spawn buffer
+      canSpawn = false;
+      spawnBuffer = SPAWN_BUFFER_MAX;
+    }
+    spawnTypeTimer -= dt;
+  } else {
+    spawnBuffer -= dt;
+    if (spawnBuffer <= 0) {
+      canSpawn = true;
+    }
   }
-  else spawnTimer -= dt;
-
-  if (spawnTypeTimer <= 0) {
-    spawnTypeTimer = 8000;
-    spawnSides = Math.floor(Math.random() * 4 + 3);
-    spawnSides = spawnSides > 6 ? 6 : spawnSides;
-    spawnColor = Object.values(COLORS)[Math.floor(Math.random() * Object.values(COLORS).length)]
-  }
-  spawnTypeTimer -= dt;
 
   enemies.forEach(e => e.update(dt));
   towers.forEach(t => t.update(dt, enemies));
@@ -120,22 +157,25 @@ function update() {
   // Switch logic
   if (gateSwitch && gateSwitch.isPresent()) {
     const gatePoint = Vec2.copy(Mechamarkers.mapPointToCanvas(gateSwitch.pos, window.innerWidth, window.innerHeight));
-    const targetGate = gates.find(g => g.position.dist(gatePoint) < 30);
-    if (targetGate) targetGate.flipped = (gateSwitch.getInput('switch').val > 0.5);
+    const targetGate = gates.find(g => g.position.dist(gatePoint) < 50);
+    if (targetGate) targetGate.flipped = !(gateSwitch.getInput('switch').val > 0.5);
   }
 
   if (towerSetter && towerSetter.isPresent()) {
     const setterPoint = Vec2.copy(Mechamarkers.mapPointToCanvas(towerSetter.pos, window.innerWidth, window.innerHeight));
-    const targetTower = towers.find(t => {
-      return t.position.dist(setterPoint) < 100
-    });
+    // 85, 25
+    const center = new Vec2(85, 25);
+    center.rotate(-towerSetter.angle);
+    center.add(setterPoint);
+    const targetTower = towers.find(t => t.position.dist(center) < 50);
 
     if (targetTower) {
-      if (towerSetter.getInput('Shape').val < 0.2) {
+      const shapeVal = towerSetter.getInput('Shape').val;
+      if (shapeVal < 0.2) {
         targetTower.sides = 3;
-      } else if (towerSetter.getInput('Shape').val < 0.5) {
+      } else if (shapeVal < 0.5) {
         targetTower.sides = 4;
-      } else if (towerSetter.getInput('Shape').val < 0.8) {
+      } else if (shapeVal < 0.8) {
         targetTower.sides = 5;
       } else {
         targetTower.sides = 6;
@@ -151,8 +191,6 @@ function update() {
       } else if (colorVal < -0.1 && colorVal > -1.4) {
         targetTower.color = COLORS.PINK;
       }
-
-      console.log(towerSetter.getInput('Color').val);
     }
   }
 
@@ -161,12 +199,6 @@ function update() {
     const currGrabberPress = towerGrabber.isPresent();
     if (currGrabberPress) {
       const grabPoint = Vec2.copy(Mechamarkers.mapPointToCanvas(towerGrabber.pos, window.innerWidth, window.innerHeight));
-      // Essentially mouse down event
-      if (!grabberWasPressed && currGrabberPress) {
-
-        if (!towerWasGrabbed) dragTarget = towers.find(t => t.isClick(grabPoint, 50));
-        if (dragTarget) dragTarget.isHeld = true;
-      }
 
       if (dragTarget) {
         dragTarget.position.x = grabPoint.x;
@@ -176,15 +208,19 @@ function update() {
 
     // Grabber up
     if (grabberWasPressed && !currGrabberPress) {
+      const grabPoint = Vec2.copy(Mechamarkers.mapPointToCanvas(towerGrabber.pos, window.innerWidth, window.innerHeight));
       if (towerWasGrabbed) {
-        const grabPoint = Vec2.copy(Mechamarkers.mapPointToCanvas(towerGrabber.pos, window.innerWidth, window.innerHeight));
         dragTarget.position.x = grabPoint.x;
         dragTarget.position.y = grabPoint.y;
         dragTarget.isHeld = false;
         dragTarget = null;
         towerWasGrabbed = false;
-      } else if (dragTarget) {
-        towerWasGrabbed = true;
+      } else if (!towerWasGrabbed && !dragTarget) {
+        if (!towerWasGrabbed) dragTarget = towers.find(t => t.isClick(grabPoint, 50));
+        if (dragTarget) {
+          dragTarget.isHeld = true;
+          towerWasGrabbed = true;
+        }
       }
     }
     
@@ -198,6 +234,8 @@ function update() {
 
   // Temp draw grabber
   if (towerGrabber && towerGrabber.isPresent()) drawGrabber(towerGrabber);
+  if (towerSetter && towerSetter.isPresent()) drawSetter(towerSetter);
+  if (gateSwitch && gateSwitch.isPresent()) drawSwitch(gateSwitch);
 
   startNode.draw(ctx);
   node1.draw(ctx);
@@ -211,6 +249,45 @@ function update() {
   node9.draw(ctx);
   node10.draw(ctx);
   node11.draw(ctx);
+
+  const pathPts = startNode.getFullPath();
+  
+  const pathSeg = 10;
+  let interpPts = [];
+
+  for (let i = 1; i < pathPts.length; i++) {
+    const start = Vec2.copy(pathPts[i - 1]);
+    const end = Vec2.copy(pathPts[i]);
+    const traj = Vec2.sub(start, end);
+    for (let j = 0; j < pathSeg; j++) {
+      const trajAdd = Vec2.scale(traj, j/pathSeg);
+      interpPts.push(Vec2.add(start, trajAdd));
+    }
+  }
+  interpPts.push(pathPts[pathPts.length-1]);
+
+  ctx.save();
+  ctx.strokeStyle = 'white';
+  ctx.lineWidth = 3;
+
+  ctx.beginPath();
+  ctx.moveTo(pathPts[0].x, pathPts[0].y);
+  pathPts.forEach(p => ctx.lineTo(p.x, p.y));
+  ctx.stroke();
+
+  const randFactor = 10;
+  ctx.strokeStyle = 'rgba('+Math.floor(155+Math.random()*100)+', '+Math.floor(155+Math.random()*100)+', '+Math.floor(155+Math.random()*100)+', 1.0)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(interpPts[0].x, interpPts[0].y);
+  interpPts.forEach(p => {
+    const randX = (Math.random() * randFactor) - (randFactor / 2);
+    const randY = (Math.random() * randFactor) - (randFactor / 2);
+    ctx.lineTo(p.x + randX, p.y + randY)
+  });
+  ctx.stroke();
+
+  ctx.restore();
 
   enemies.forEach(e => e.draw(ctx));
   towers.forEach(t => t.draw(ctx));
@@ -231,9 +308,6 @@ export function init() {
   ctx.translate(0.5, 0.5); // dumb blurry fix
 
   Mechamarkers.init(canvas, ctx);
-
-  // CLEMENT HERE IS HOW YOU GET FULL PATH
-  console.log(startNode.getFullPath());
 
   // Put towers in
   const towerY = window.innerHeight / 4 * 3;

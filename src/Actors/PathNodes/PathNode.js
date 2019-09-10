@@ -42,8 +42,7 @@ class PathNode {
   draw(ctx) {
     ctx.save();
     
-    ctx.strokeStyle = this.active ? 'white' : 'grey';
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = this.active ? 'white' : 'white';
     ctx.beginPath();
     ctx.moveTo(this.position.x, this.position.y);
     ctx.lineTo(this.nextNode.position.x, this.nextNode.position.y);

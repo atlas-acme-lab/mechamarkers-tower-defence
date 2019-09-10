@@ -8,6 +8,19 @@ export default class Vec2 {
     return new Vec2(v2.x + v1.x, v2.y + v1.y);
   }
 
+  static addScalar(v1, v2, s) {
+    const x = v1.x + (v2.x * s);
+    const y = v1.y + (v2.y * s);
+
+    return new Vec2(x, y);
+  }
+
+  static rotate(v, angle) {
+    const x = v.x * Math.cos(angle) - v.y * Math.sin(angle);
+    const y = v.x * Math.sin(angle) + v.y * Math.cos(angle);
+    return new Vec2(x, y);
+  }
+
   static scale(v, s) {
     return new Vec2(v.x * s, v.y * s);
   }
@@ -99,8 +112,7 @@ export default class Vec2 {
   rotate(angle) {
     const x = this.x * Math.cos(angle) - this.y * Math.sin(angle);
     const y = this.x * Math.sin(angle) + this.y * Math.cos(angle);
-    return {x:x, y:y};
+    this.x = x;
+    this.y = y;
   }
-
-
 }

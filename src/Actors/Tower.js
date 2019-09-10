@@ -71,7 +71,7 @@ function drawTower(ctx, pos, range, size, points, color, alpha, rotateVal) {
   const xaxis = new Vec2(1, 0);
   let pointsArr = [];
   for (let i=0; i<points; i++) {
-    const p = Vec2.scale(xaxis.rotate(2 * Math.PI / points * i), size/2);
+    const p = Vec2.scale(Vec2.rotate(xaxis, 2 * Math.PI / points * i), size/2);
     pointsArr.push(p);
   }
 
@@ -79,14 +79,15 @@ function drawTower(ctx, pos, range, size, points, color, alpha, rotateVal) {
   const randPoints = 30;
   let randBoundaryA = [];
   for (let i=0; i<randPoints; i++) {
-    const p1 = Vec2.scale(xaxis.rotate(2 * Math.PI / randPoints * i), range + randRange(randFactor));
+    const p1 = Vec2.scale(Vec2.rotate(xaxis, 2 * Math.PI / randPoints * i), range + randRange(randFactor));
     randBoundaryA.push(p1);
   }
 
   ctx.save();
   ctx.translate(pos.x, pos.y);
 
-  ctx.strokeStyle = 'rgba('+color.r+', '+color.g+', '+color.b+', '+alpha+')';
+  ctx.strokeStyle = 'rgba('+color.r+', '+color.g+', '+color.b+', '+alpha*0.6+')';
+  ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(randBoundaryA[0].x, randBoundaryA[0].y);
   randBoundaryA.forEach(p => ctx.lineTo(p.x, p.y));
