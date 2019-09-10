@@ -236,7 +236,11 @@ export function init() {
   console.log(startNode.getFullPath());
 
   // Put towers in
-  towers.push(new Tower(new Vec2(400, 300), addProjectile));
+  const towerY = window.innerHeight / 4 * 3;
+  const towerX = window.innerWidth / 2;
+  towers.push(new Tower(new Vec2(towerX - 200, towerY), addProjectile));
+  towers.push(new Tower(new Vec2(towerX, towerY), addProjectile));
+  towers.push(new Tower(new Vec2(towerX + 200, towerY), addProjectile));
 
   resize();
   window.onresize = resize;
