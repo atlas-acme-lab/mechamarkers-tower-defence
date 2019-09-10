@@ -43,6 +43,7 @@ const node11 = new EndNode(new Vec2(w * 0.9, h * 0.85));
 
 startNode.setNext(node1);
 node1.setNext(node2, node3);
+node1.flipped = true;
 node2.setNext(node4);
 node3.setNext(node5);
 node4.setNext(node6, node7);
@@ -90,6 +91,8 @@ function update() {
   prevTime = currTime;
 
   Mechamarkers.update(currTime);
+  // trigger active state on all nodes
+  startNode.setActive();
 
   if (spawnTimer <= 0) {
     spawnTimer = SPAWN_TIME_MAX;
@@ -136,6 +139,17 @@ function update() {
         targetTower.sides = 5;
       } else {
         targetTower.sides = 6;
+      }
+
+      const colorVal = towerSetter.getInput('Color').val;
+      if (colorVal < 3.1 && colorVal > 1.5) {
+        targetTower.color = COLORS.GOLD;
+      } else if (colorVal < 1.4 && colorVal > 0) {
+        targetTower.color = COLORS.GREEN;
+      } else if (colorVal < -1.5 && colorVal > -3.1) {
+        targetTower.color = COLORS.BLUE;
+      } else if (colorVal < -0.1 && colorVal > -1.4) {
+        targetTower.color = COLORS.PINK;
       }
 
       console.log(towerSetter.getInput('Color').val);
@@ -217,6 +231,9 @@ export function init() {
   ctx.translate(0.5, 0.5); // dumb blurry fix
 
   Mechamarkers.init(canvas, ctx);
+
+  // CLEMENT HERE IS HOW YOU GET FULL PATH
+  console.log(startNode.getFullPath());
 
   // Put towers in
   towers.push(new Tower(new Vec2(400, 300), addProjectile));

@@ -9,6 +9,18 @@ class EndNode {
     this.nodeType = 'END_NODE';
   }
 
+  setActive() {
+    this.active = true;
+  }
+
+  setInactive() {
+    this.active = false;
+  }
+
+  getFullPath() {
+    return [this.position];
+  }
+
   hasArrived(pos) {
     if (this.position.dist2(pos) < NODE_DIST_SQ) {
       return true;
@@ -22,7 +34,7 @@ class EndNode {
 
   draw(ctx) {
     ctx.save();
-    ctx.strokeStyle = 'white';
+    ctx.strokeStyle = this.active ? 'white' : 'grey';
     ctx.beginPath();
     ctx.arc(this.position.x, this.position.y, 15, 0, 2 * Math.PI);
     ctx.stroke();

@@ -37,9 +37,6 @@ const CELLS_SIMPLE = CELLS.map(c => ({
   h: c[2].y - c[0].y,
 }));
 
-
-
-
 function generateQuads(q) {
   var a0 = shiftArray2D(q, -1, -1);
   var a1 = shiftArray2D(q, 1, -1);

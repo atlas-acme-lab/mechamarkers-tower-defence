@@ -7,6 +7,7 @@ class SwitchBranch {
   constructor(position) {
     this.position = position;
     this.nodeType = 'SWITCH_BRANCH';
+    this.flipped = false
   }
 
   setNext(n1, n2) {
@@ -25,18 +26,51 @@ class SwitchBranch {
     return this.flipped ? this.next2 : this.next1;
   }
 
+  setActive() {
+    this.active = true;
+
+    // Always do inactive first so that
+    // active things get set last and not overwritten
+    if (this.flipped) {
+      this.next1.setInactive();
+      this.next2.setActive();
+    } else {
+      this.next2.setInactive();
+      this.next1.setActive();
+    }
+  }
+
+  setInactive() {
+    this.active = false;
+    this.next1.setInactive();
+    this.next2.setInactive();
+  }
+
+  getFullPath() {
+    const path = this.flipped ? this.next2.getFullPath() : this.next1.getFullPath();
+    return [this.position, ...path];
+  }
+
   flip() {
     this.flipped = !this.flipped;
   }
 
   draw(ctx) {
     ctx.save();
-    ctx.strokeStyle = 'white';
+
+    // path 1
+    ctx.strokeStyle = this.active && !this.flipped ? 'white' : 'grey';
     ctx.beginPath();
-    ctx.lineTo(this.position.x, this.position.y);
-    if (this.flipped) ctx.lineTo(this.next2.position.x, this.next2.position.y);
-    else ctx.lineTo(this.next1.position.x, this.next1.position.y);
+    ctx.moveTo(this.position.x, this.position.y);
+    ctx.lineTo(this.next1.position.x, this.next1.position.y);
     ctx.stroke();
+
+    ctx.strokeStyle = this.active && this.flipped ? 'white' : 'grey';
+    ctx.beginPath();
+    ctx.moveTo(this.position.x, this.position.y);
+    ctx.lineTo(this.next2.position.x, this.next2.position.y);
+    ctx.stroke();
+
     ctx.restore();
   }
 }
