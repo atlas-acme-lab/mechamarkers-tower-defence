@@ -60,12 +60,13 @@ const gates = [node1, node4, node5];
 const SPAWN_TIME_MAX = 1700;
 let spawnTimer = SPAWN_TIME_MAX;
 
-let spawnTypeTimer = 8000;
+let spawnTypeTimer = 5000;
+let SPAWN_TYPE_MAX = 5000;
 let spawnSides = 3;
 let spawnColor = COLORS.GOLD;
 let canSpawn = true;
-let spawnBuffer = 3000;
-let SPAWN_BUFFER_MAX = 3000;
+let SPAWN_BUFFER_MAX = 1200;
+let spawnBuffer = SPAWN_BUFFER_MAX;
 
 function addProjectile(start, target, shape, color) {
   projectiles.push(new Projectile(start, target, shape, color));
@@ -113,7 +114,7 @@ function drawSwitch(gateSwitch) {
 
 function update() {
   const currTime = Date.now();
-  const dt = (currTime - prevTime) * 0.5;
+  const dt = (currTime - prevTime);
   prevTime = currTime;
 
   Mechamarkers.update(currTime);
@@ -128,7 +129,7 @@ function update() {
     else spawnTimer -= dt;
     
     if (spawnTypeTimer <= 0) {
-      spawnTypeTimer = 8000;
+      spawnTypeTimer = SPAWN_TYPE_MAX;
       spawnSides = Math.floor(Math.random() * 4 + 3);
       spawnSides = spawnSides > 6 ? 6 : spawnSides;
       spawnColor = Object.values(COLORS)[Math.floor(Math.random() * Object.values(COLORS).length)]
@@ -312,9 +313,11 @@ export function init() {
   // Put towers in
   const towerY = window.innerHeight / 4 * 3;
   const towerX = window.innerWidth / 2;
+  towers.push(new Tower(new Vec2(towerX - 400, towerY), addProjectile));
   towers.push(new Tower(new Vec2(towerX - 200, towerY), addProjectile));
   towers.push(new Tower(new Vec2(towerX, towerY), addProjectile));
   towers.push(new Tower(new Vec2(towerX + 200, towerY), addProjectile));
+  towers.push(new Tower(new Vec2(towerX + 400, towerY), addProjectile));
 
   resize();
   window.onresize = resize;

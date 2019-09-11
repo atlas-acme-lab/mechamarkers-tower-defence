@@ -1,4 +1,4 @@
-import * as Vec2 from '../../Utils/Vec2';
+import Vec2 from '../../Utils/Vec2';
 
 const NODE_DIST = 5;
 const NODE_DIST_SQ = NODE_DIST * NODE_DIST;
@@ -56,8 +56,26 @@ class SwitchBranch {
   }
 
   draw(ctx) {
+    const direction = !this.flipped ? Vec2.sub(this.position, this.next1.position) : Vec2.sub(this.position, this.next2.position);
+    direction.normalize();
+    direction.scale(30);
     ctx.save();
+    ctx.fillStyle = 'white';
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 5;
+    ctx.translate(this.position.x, this.position.y);
+    ctx.beginPath();
+    ctx.arc(0, 0, 10, 0, Math.PI * 2);
+    ctx.fill();
 
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(direction.x, direction.y);
+    ctx.stroke();
+
+    ctx.restore();
+
+    ctx.save();
     // path 1
     ctx.strokeStyle = this.active && !this.flipped ? 'white' : 'white';
     ctx.beginPath();

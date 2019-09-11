@@ -4,7 +4,7 @@ import Vec2 from '../Utils/Vec2';
 export default class Tower {
   constructor(position, addProjectile) {
     this.position = position;
-    this.range = 90;
+    this.range = 120;
     this.center = 10;
     this.rangeSq = this.range * this.range;
     this.shootTimer = 0;
