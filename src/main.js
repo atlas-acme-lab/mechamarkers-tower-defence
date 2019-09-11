@@ -252,7 +252,7 @@ function update() {
 
   const pathPts = startNode.getFullPath();
   
-  const pathSeg = 10;
+  const pathSeg = 12;
   let interpPts = [];
 
   for (let i = 1; i < pathPts.length; i++) {
@@ -267,16 +267,16 @@ function update() {
   interpPts.push(pathPts[pathPts.length-1]);
 
   ctx.save();
-  ctx.strokeStyle = 'white';
-  ctx.lineWidth = 3;
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+  ctx.lineWidth = 4;
 
   ctx.beginPath();
   ctx.moveTo(pathPts[0].x, pathPts[0].y);
   pathPts.forEach(p => ctx.lineTo(p.x, p.y));
   ctx.stroke();
 
-  const randFactor = 10;
-  ctx.strokeStyle = 'rgba('+Math.floor(155+Math.random()*100)+', '+Math.floor(155+Math.random()*100)+', '+Math.floor(155+Math.random()*100)+', 1.0)';
+  const randFactor = 11;
+  ctx.strokeStyle = 'rgba('+Math.floor(100+Math.random()*155)+', '+Math.floor(100+Math.random()*155)+', '+Math.floor(100+Math.random()*155)+', 1.0)';
   ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo(interpPts[0].x, interpPts[0].y);
