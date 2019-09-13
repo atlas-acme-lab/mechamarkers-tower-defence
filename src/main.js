@@ -17,6 +17,7 @@ let dragTarget;
 let towerWasGrabbed = false;
 let grabberWasPressed = false;
 
+let pause = false;
 let canvas, ctx, prevTime;
 
 const w = window.innerWidth;
@@ -82,37 +83,74 @@ function filterActors() {
 
 function drawGrabber(grabber) {
   const grabPoint = Vec2.copy(Mechamarkers.mapPointToCanvas(grabber.pos, window.innerWidth, window.innerHeight));
-  ctx.fillStyle = 'white';
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
   ctx.beginPath();
-  ctx.arc(grabPoint.x, grabPoint.y, 40, 0, Math.PI * 2);
+  ctx.arc(grabPoint.x, grabPoint.y, 30, 0, Math.PI * 2);
   ctx.fill();
   ctx.closePath();
 }
 
 function drawSetter(setter) {
   const pos = Vec2.copy(Mechamarkers.mapPointToCanvas(setter.pos, window.innerWidth, window.innerHeight));
+  const colorVal = setter.getInput('Color').val;
+
   ctx.save();
-  ctx.fillStyle = 'white';
+  ctx.strokeStyle = 'white';
+  ctx.lineWidth = 2;
   ctx.translate(pos.x, pos.y);
   ctx.rotate(-setter.angle);
+  ctx.translate(90, 35);
   ctx.beginPath();
-  ctx.arc(85, 25, 10, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.closePath();
+  ctx.arc(0, 0, 10, 0, Math.PI * 2);
+  ctx.stroke();
+
+  let wheelAlpha = 0.5;
+
+  ctx.beginPath();
+  wheelAlpha = (colorVal < -1.5 && colorVal < 3.1) ? 1 : 0.5;
+  ctx.strokeStyle = `rgba(${COLORS.BLUE.r}, ${COLORS.BLUE.g}, ${COLORS.BLUE.b}, ${wheelAlpha})`;
+  ctx.lineWidth = (colorVal < -1.5 && colorVal < 3.1) ? 16 : 12;
+  ctx.arc(0, 0, 50, -0.1, -1.5,true);
+  ctx.stroke();
+
+  ctx.beginPath();
+  wheelAlpha = (colorVal < -0.1 && colorVal > -1.4) ? 1 : 0.5;
+  ctx.strokeStyle = `rgba(${COLORS.PINK.r}, ${COLORS.PINK.g}, ${COLORS.PINK.b}, ${wheelAlpha})`;
+  ctx.lineWidth = (colorVal < -0.1 && colorVal > -1.4) ? 16 : 12;
+  ctx.arc(0, 0, 50, 1.4, 0, true);
+  ctx.stroke();
+
+  ctx.beginPath();
+  wheelAlpha = (colorVal < 1.4 && colorVal > 0) ? 1 : 0.5;
+  ctx.strokeStyle = `rgba(${COLORS.GREEN.r}, ${COLORS.GREEN.g}, ${COLORS.GREEN.b}, ${wheelAlpha})`;
+  ctx.lineWidth = (colorVal < 1.4 && colorVal > 0) ? 16 : 12;
+  ctx.arc(0, 0, 50, 3.1, 1.5, true);
+  ctx.stroke();
+
+  ctx.beginPath();
+  wheelAlpha = (colorVal < 2.9 && colorVal > 1.5) ? 1 : 0.5;
+  ctx.strokeStyle = `rgba(${COLORS.GOLD.r}, ${COLORS.GOLD.g}, ${COLORS.GOLD.b}, ${wheelAlpha})`;
+  ctx.lineWidth = (colorVal < 2.9 && colorVal > 1.5) ? 16 : 12;
+  ctx.arc(0, 0, 50, -1.6, -3.1, true);
+  ctx.stroke();
   ctx.restore();
 }
 
 function drawSwitch(gateSwitch) {
   const pos = Vec2.copy(Mechamarkers.mapPointToCanvas(gateSwitch.pos, window.innerWidth, window.innerHeight));
-
-  ctx.fillStyle = 'white';
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
   ctx.beginPath();
-  ctx.arc(pos.x, pos.y, 50, 0, Math.PI * 2);
+  ctx.arc(pos.x, pos.y, 40, 0, Math.PI * 2);
   ctx.fill();
   ctx.closePath();
 }
 
 function update() {
+  if (pause) {
+    prevTime = Date.now();
+    window.requestAnimationFrame(update);
+    return;
+  }
   const currTime = Date.now();
   const dt = (currTime - prevTime);
   prevTime = currTime;
@@ -172,22 +210,23 @@ function update() {
 
     if (targetTower) {
       const shapeVal = towerSetter.getInput('Shape').val;
+
       if (shapeVal < 0.2) {
         targetTower.sides = 3;
-      } else if (shapeVal < 0.5) {
+      } else if (shapeVal < 0.65) {
         targetTower.sides = 4;
-      } else if (shapeVal < 0.8) {
+      } else if (shapeVal < 0.80) {
         targetTower.sides = 5;
-      } else {
+      } else if (shapeVal > 0.80) {
         targetTower.sides = 6;
       }
 
       const colorVal = towerSetter.getInput('Color').val;
-      if (colorVal < 3.1 && colorVal > 1.5) {
+      if (colorVal < 2.9 && colorVal > 1.5) {
         targetTower.color = COLORS.GOLD;
       } else if (colorVal < 1.4 && colorVal > 0) {
         targetTower.color = COLORS.GREEN;
-      } else if (colorVal < -1.5 && colorVal > -3.1) {
+      } else if (colorVal < -1.5 && colorVal < 3.1) {
         targetTower.color = COLORS.BLUE;
       } else if (colorVal < -0.1 && colorVal > -1.4) {
         targetTower.color = COLORS.PINK;
@@ -307,6 +346,10 @@ export function init() {
   canvas = document.querySelector('canvas');
   ctx = canvas.getContext('2d');
   ctx.translate(0.5, 0.5); // dumb blurry fix
+
+  document.addEventListener('keypress', (e) => {
+    if (e.key === 'p') pause = !pause; 
+  });
 
   Mechamarkers.init(canvas, ctx);
 
